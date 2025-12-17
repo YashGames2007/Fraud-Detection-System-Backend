@@ -22,7 +22,16 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        // ✅ Public endpoints
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/signup"
+                        ).permitAll()
+
+                        // 🔒 Protected auth endpoint
+                        .requestMatchers("/auth/set-pin").authenticated()
+
+                        // 🔒 Everything else
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
@@ -34,4 +43,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }

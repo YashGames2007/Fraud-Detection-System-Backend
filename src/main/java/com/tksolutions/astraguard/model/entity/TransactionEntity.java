@@ -1,10 +1,15 @@
 package com.tksolutions.astraguard.model.entity;
 
+import com.tksolutions.astraguard.model.entity.embedded.DeviceInfo;
+import com.tksolutions.astraguard.model.entity.embedded.LocationInfo;
+import com.tksolutions.astraguard.model.entity.embedded.NetworkInfo;
+import com.tksolutions.astraguard.model.entity.embedded.RiskInfo;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
+import java.util.List;
 
 @Document(collection = "transactions")
 public class TransactionEntity {
@@ -17,16 +22,23 @@ public class TransactionEntity {
     @Field("receiver_id")
     private String receiverId;
 
-    private Long amount;
-    private String status;
+    private long amount;
 
-    @Field("risk_score")
-    private Double riskScore;
+    private String status; // SUCCESS / BLOCKED / FAILED
+    @Field("transaction_type")
+    private String transactionType; // QR_CODE / BANK_TO_BANK / DIRECT_PHONE_NUMBER
 
-    @Field("created_at")
+    // === Fraud-related context ===
+    private DeviceInfo device;
+    private LocationInfo location;
+    private NetworkInfo network;
+    private RiskInfo risk;
+
     private Instant createdAt;
+    private Instant updatedAt;
 
     // getters & setters
+
 
     public String getId() {
         return id;
@@ -52,11 +64,11 @@ public class TransactionEntity {
         this.receiverId = receiverId;
     }
 
-    public Long getAmount() {
+    public long getAmount() {
         return amount;
     }
 
-    public void setAmount(Long amount) {
+    public void setAmount(long amount) {
         this.amount = amount;
     }
 
@@ -68,12 +80,44 @@ public class TransactionEntity {
         this.status = status;
     }
 
-    public Double getRiskScore() {
-        return riskScore;
+    public String getTransactionType() {
+        return transactionType;
     }
 
-    public void setRiskScore(Double riskScore) {
-        this.riskScore = riskScore;
+    public void setTransactionType(String transactionType) {
+        this.transactionType = transactionType;
+    }
+
+    public DeviceInfo getDevice() {
+        return device;
+    }
+
+    public void setDevice(DeviceInfo device) {
+        this.device = device;
+    }
+
+    public LocationInfo getLocation() {
+        return location;
+    }
+
+    public void setLocation(LocationInfo location) {
+        this.location = location;
+    }
+
+    public NetworkInfo getNetwork() {
+        return network;
+    }
+
+    public void setNetwork(NetworkInfo network) {
+        this.network = network;
+    }
+
+    public RiskInfo getRisk() {
+        return risk;
+    }
+
+    public void setRisk(RiskInfo risk) {
+        this.risk = risk;
     }
 
     public Instant getCreatedAt() {
@@ -82,5 +126,13 @@ public class TransactionEntity {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

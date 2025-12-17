@@ -6,12 +6,11 @@ import lombok.Data;
 public class TransactionTransferRequest {
 
     private String toUpi;
-    private Double amount;
+    private Long amount;
     private String pin;
     private String transactionType;
     private Device device;
     private Location location;
-
 
 
     @Data

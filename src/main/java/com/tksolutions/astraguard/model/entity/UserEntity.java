@@ -20,7 +20,7 @@ public class UserEntity {
     private String mobile;
 
     @Field("current_balance")
-    private Double currentBalance;
+    private Long currentBalance;
 
     @Field("device_ids")
     private List<String> deviceIds;
@@ -46,7 +46,7 @@ public class UserEntity {
     public UserEntity() {}
 
     public UserEntity(String id, String upiId, String name,
-                      Double currentBalance, List<String> deviceIds,
+                      Long currentBalance, List<String> deviceIds,
                       Instant createdAt) { this.id = id;
         this.upiId = upiId;
         this.name = name;
@@ -64,8 +64,8 @@ public class UserEntity {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public Double getCurrentBalance() { return currentBalance; }
-    public void setCurrentBalance(Double currentBalance) { this.currentBalance = currentBalance; }
+    public Long getCurrentBalance() { return currentBalance; }
+    public void setCurrentBalance(Long currentBalance) { this.currentBalance = currentBalance; }
 
     public List<String> getDeviceIds() { return deviceIds; }
     public void setDeviceIds(List<String> deviceIds) { this.deviceIds = deviceIds; }
