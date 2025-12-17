@@ -1,6 +1,7 @@
 package com.tksolutions.astraguard.service;
 
 import com.tksolutions.astraguard.dto.*;
+import com.tksolutions.astraguard.model.AuthUser;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -18,51 +19,56 @@ public class TransactionService {
         this.decisionAgentClientService = decisionAgentClientService;
     }
 
-    public TransactionResponse processTransaction(TransactionTransferRequest request) {
+    public TransactionResponse processTransaction(AuthUser user, TransactionTransferRequest request) {
 
         // 1️⃣ Generate transaction reference
         String transactionId = UUID.randomUUID().toString();
 
-        // 2️⃣ Build request for Python Risk Engine (ML + Rules)
-        RiskEvaluationRequest riskRequest = new RiskEvaluationRequest(
-                request.getAmount(),
-                request.getLocation(),
-                request.getDevice().getDeviceId()
-        );
+        System.out.println("Generated Transaction: " + request + " User: " + user.getUpiId());
 
-        // 3️⃣ Call Python Risk Engine
-        RiskEvaluationResponse riskResponse =
-                riskEngineClientService.evaluateRisk(riskRequest);
+//        // 2️⃣ Build request for Python Risk Engine (ML + Rules)
+//        RiskEvaluationRequest riskRequest = new RiskEvaluationRequest(
+//                request.getAmount(),
+//                request.getLocation(),
+//                request.getDevice().getDeviceId()
+//        );
 
-        // 4️⃣ Convert external response → internal RiskPacket
-        RiskPacket riskPacket = new RiskPacket();
-        riskPacket.setMlScore(riskResponse.getMlScore());
-        riskPacket.setRuleScore(riskResponse.getRuleScore());
-        riskPacket.setAnomalyScore(riskResponse.getAnomalyScore());
-        riskPacket.setReasons(riskResponse.getReasons());
+//        // 3️⃣ Call Python Risk Engine
+//        RiskEvaluationResponse riskResponse =
+//                riskEngineClientService.evaluateRisk(riskRequest);
 
-        // (Optional) log for debugging / demo
-        System.out.println("Risk Packet: " + riskPacket);
-
-        // 5️⃣ Send RiskPacket to Decision Agent
-        DecisionResponse decision =
-                decisionAgentClientService.evaluate(riskPacket);
-
-        // (Optional) log decision
-        System.out.println("Decision Taken: " + decision.getAction());
-
-        double finalRiskScore =
-                (riskPacket.getMlScore() * 0.5) +
-                        (riskPacket.getRuleScore() * 0.3) +
-                        (riskPacket.getAnomalyScore() * 0.2);
+//        // 4️⃣ Convert external response → internal RiskPacket
+//        RiskPacket riskPacket = new RiskPacket();
+//        riskPacket.setMlScore(riskResponse.getMlScore());
+//        riskPacket.setRuleScore(riskResponse.getRuleScore());
+//        riskPacket.setAnomalyScore(riskResponse.getAnomalyScore());
+//        riskPacket.setReasons(riskResponse.getReasons());
+//
+//        // (Optional) log for debugging / demo
+//        System.out.println("Risk Packet: " + riskPacket);
+//
+//        // 5️⃣ Send RiskPacket to Decision Agent
+//        DecisionResponse decision =
+//                decisionAgentClientService.evaluate(riskPacket);
+//
+//        // (Optional) log decision
+//        System.out.println("Decision Taken: " + decision.getAction());
+//
+//        double finalRiskScore =
+//                (riskPacket.getMlScore() * 0.5) +
+//                        (riskPacket.getRuleScore() * 0.3) +
+//                        (riskPacket.getAnomalyScore() * 0.2);
 
 
         // 6️⃣ Return final response to transaction app
         return new TransactionResponse(
                 transactionId,
-                decision.getAction(),
-                finalRiskScore,
-                decision.getExplanation()
+                "SUCCESS",
+                20.00,
+                        "Transaction was Successfully carried out."
+//                decision.getAction(),
+//                finalRiskScore,
+//                decision.getExplanation()
         );
     }
 }
