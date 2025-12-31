@@ -48,9 +48,13 @@ public class TransactionHistoryService {
         UserEntity receiver = userRepository
                 .findById(txn.getReceiverId())
                 .orElseThrow(); // safe for MVP
+        UserEntity sender =  userRepository
+                .findById(txn.getSenderId())
+                .orElseThrow(); // safe for MVP
 
         return new TransactionHistoryItem(
                 txn.getId(),
+                sender.getUpiId(),
                 receiver.getUpiId(),
                 txn.getAmount(),
                 txn.getStatus(),

@@ -5,6 +5,7 @@ import java.time.Instant;
 public class TransactionHistoryItem {
 
     private String transactionId;
+    private String fromUpi;
     private String toUpi;
     private long amount;
     private String status;
@@ -12,12 +13,14 @@ public class TransactionHistoryItem {
 
     public TransactionHistoryItem(
             String transactionId,
+            String fromUpi,
             String toUpi,
             long amount,
             String status,
             Instant createdAt
     ) {
         this.transactionId = transactionId;
+        this.fromUpi = fromUpi;
         this.toUpi = toUpi;
         this.amount = amount;
         this.status = status;
@@ -30,6 +33,10 @@ public class TransactionHistoryItem {
 
     public String getToUpi() {
         return toUpi;
+    }
+
+    public String getFromUpi() {
+        return fromUpi;
     }
 
     public long getAmount() {
