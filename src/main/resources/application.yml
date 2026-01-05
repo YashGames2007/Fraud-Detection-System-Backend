@@ -3,5 +3,6 @@ spring:
     name: astraguard-backend
 
 ml:
-  base-url: http://localhost:8000
-  evaluate-path: /risk/evaluate
+  # Added space after colon and fixed indentation
+  base-url: https://pratikd-110924-fraud-detection-ml-service.hf.space
+  evaluate-path: /secure_predict

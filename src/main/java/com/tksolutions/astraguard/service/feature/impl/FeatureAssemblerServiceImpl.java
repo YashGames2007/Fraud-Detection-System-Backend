@@ -1,77 +1,68 @@
-    package com.tksolutions.astraguard.service.feature.impl;
+package com.tksolutions.astraguard.service.feature.impl;
 
-    import com.tksolutions.astraguard.dto.ml.MlRiskRequest;
-    import com.tksolutions.astraguard.model.entity.TransactionEntity;
-    import com.tksolutions.astraguard.model.entity.UserEntity;
-    import com.tksolutions.astraguard.service.feature.FeatureAssemblerService;
-    import org.springframework.stereotype.Service;
+import com.tksolutions.astraguard.dto.ml.MlRiskRequest;
+import com.tksolutions.astraguard.model.entity.TransactionEntity;
+import com.tksolutions.astraguard.model.entity.UserEntity;
+import com.tksolutions.astraguard.service.feature.FeatureAssemblerService;
+import org.springframework.stereotype.Service;
 
-    import java.nio.charset.StandardCharsets;
-    import java.security.MessageDigest;
-    import java.util.Optional;
+import java.util.Optional;
 
-    @Service
-    public class FeatureAssemblerServiceImpl implements FeatureAssemblerService {
+@Service
+public class FeatureAssemblerServiceImpl implements FeatureAssemblerService {
 
-        @Override
-        public MlRiskRequest buildMlRiskRequest(
-                TransactionEntity currentTxn,
-                UserEntity sender,
-                UserEntity receiver,
-                long senderBalanceBefore,
-                long receiverBalanceBefore,
-                long totalTxnCount,
-                Optional<TransactionEntity> lastTxn
-        ) {
+    @Override
+    public MlRiskRequest buildMlRiskRequest(
+            TransactionEntity currentTxn,
+            UserEntity sender,
+            UserEntity receiver,
+            long senderBalanceBefore,
+            long receiverBalanceBefore,
+            long totalTxnCount,
+            Optional<TransactionEntity> lastTxn
+    ) {
 
-            MlRiskRequest ml = new MlRiskRequest();
+        MlRiskRequest ml = new MlRiskRequest();
 
-            // 1️⃣ Step logic
-            long step = totalTxnCount + 1;
-            long prevStep = lastTxn
-                    .map(txn -> txn.getRisk() != null ? step - 1 : step - 1)
-                    .orElse(step - 1);
+        // 1️⃣ Step logic
+        long step = totalTxnCount + 1;
+        long prevStep = step-1;
 
-            ml.setStep(step);
-            ml.setPrevStep(prevStep);
+        ml.setStep(step);
+        ml.setPrevStep(prevStep);
 
-            // 2️⃣ Transaction type token
-            ml.setTypeToken(tokenize("TYPE", currentTxn.getTransactionType()));
+        // 2️⃣ FIXED transaction type mapping
+        ml.setTypeToken(mapTransactionType(currentTxn.getTransactionType()));
 
-            // 3️⃣ Amount (raw)
-            ml.setAmount(currentTxn.getAmount());
+        // 3️⃣ Amount (RAW)
+        ml.setAmount(currentTxn.getAmount());
 
-            // 4️⃣ Sender features
-            ml.setNameOrigToken(tokenize("USER", sender.getUpiId()));
-            ml.setOldBalanceOrg(senderBalanceBefore);
-            ml.setNewBalanceOrig(senderBalanceBefore - currentTxn.getAmount());
+        // 4️⃣ Sender features
+        ml.setNameOrigToken("TKN_USER_" + sender.getId());
+        ml.setOldBalanceOrg(senderBalanceBefore);
+        ml.setNewBalanceOrig(senderBalanceBefore - currentTxn.getAmount());
 
-            // 5️⃣ Receiver features
-            ml.setNameDestToken(tokenize("USER", receiver.getUpiId()));
-            ml.setOldBalanceDest(receiverBalanceBefore);
-            ml.setNewBalanceDest(receiverBalanceBefore + currentTxn.getAmount());
+        // 5️⃣ Receiver features
+        ml.setNameDestToken("TKN_DEST_" + receiver.getId());
+        ml.setOldBalanceDest(receiverBalanceBefore);
+        ml.setNewBalanceDest(receiverBalanceBefore + currentTxn.getAmount());
 
-            return ml;
-        }
-
-        /**
-         * Deterministic tokenization using SHA-256
-         */
-        private String tokenize(String prefix, String value) {
-            try {
-                MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                byte[] hash = digest.digest(value.getBytes(StandardCharsets.UTF_8));
-
-                // Shorten hash for readability (ML doesn’t need full hash)
-                StringBuilder hex = new StringBuilder();
-                for (int i = 0; i < 6; i++) {
-                    hex.append(String.format("%02x", hash[i]));
-                }
-
-                return prefix + "_TKN_" + hex;
-
-            } catch (Exception e) {
-                throw new RuntimeException("Tokenization failed", e);
-            }
-        }
+        return ml;
     }
+
+    /**
+     * ML-approved transaction type mapping
+     */
+    private String mapTransactionType(String rawType) {
+        return switch (rawType.toUpperCase()) {
+            case "PAYMENT"  -> "TYPE_TKN_01";
+            case "TRANSFER" -> "TYPE_TKN_02";
+            case "CASH_OUT" -> "TYPE_TKN_03";
+            case "DEBIT"    -> "TYPE_TKN_04";
+            case "CASH_IN"  -> "TYPE_TKN_05";
+            default -> throw new IllegalArgumentException(
+                    "Unsupported transaction type for ML: " + rawType
+            );
+        };
+    }
+}
