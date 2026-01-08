@@ -4,7 +4,9 @@ import com.tksolutions.astraguard.dto.*;
 import com.tksolutions.astraguard.exception.InvalidTransactionException;
 import com.tksolutions.astraguard.exception.UserNotFoundException;
 import com.tksolutions.astraguard.model.AuthUser;
+import com.tksolutions.astraguard.model.entity.LedgerEntryEntity;
 import com.tksolutions.astraguard.model.entity.UserEntity;
+import com.tksolutions.astraguard.repository.LedgerRepository;
 import com.tksolutions.astraguard.repository.UserRepository;
 import com.tksolutions.astraguard.utils.JwtUtil;
 import com.tksolutions.astraguard.utils.PasswordUtil;
@@ -18,10 +20,12 @@ import java.util.UUID;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final LedgerRepository ledgerRepository;
     private final JwtUtil jwtUtil;
 
-    public AuthService(UserRepository userRepository, JwtUtil jwtUtil) {
+    public AuthService(UserRepository userRepository, LedgerRepository ledgerRepository, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
+        this.ledgerRepository = ledgerRepository;
         this.jwtUtil = jwtUtil;
     }
 
@@ -51,6 +55,17 @@ public class AuthService {
         user.setUpdatedAt(Instant.now());
 
         userRepository.save(user);
+
+        // Adding 50k default balance to a new user's account
+        LedgerEntryEntity entry = new LedgerEntryEntity();
+        entry.setId(UUID.randomUUID().toString());
+        entry.setTxnId("SYSTEM_INIT");
+        entry.setUserId(user.getId());
+        entry.setType("CREDIT");
+        entry.setAmount(50000L);
+        entry.setBalanceAfter(50000L);
+        entry.setCreatedAt(Instant.now());
+        ledgerRepository.save(entry);
     }
 
     // LOGIN

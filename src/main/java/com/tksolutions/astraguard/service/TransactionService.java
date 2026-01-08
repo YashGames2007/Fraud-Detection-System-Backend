@@ -1,4 +1,3 @@
-
 //----------------------------------New Final code with the logic to send ml request --------------
 
 /**
@@ -114,10 +113,10 @@ public class TransactionService {
         long senderBalance = ledgerRepository.findTopByUserIdOrderByCreatedAtDesc(sender.getId())
                 .map(LedgerEntryEntity::getBalanceAfter)
                 .orElse(0L);
-
+        // Check if sender has enough money
         if (senderBalance < request.getAmount()) {
-            System.out.println("DEBUG: Low balance (" + senderBalance + "), applying test balance of 30000");
-            senderBalance = 30000;
+            System.out.println("DEBUG: Transaction failed due to insufficient balance."); //
+            throw new InsufficientBalanceException(senderBalance); // This stops the program and sends the error to the app
         }
 
         // 4️⃣ Load receiver
